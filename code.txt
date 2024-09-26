@@ -114,3 +114,6 @@ HAVING AVG(marks) < (SELECT avg_marks FROM overall_average);
 
 
 SELECT * FROM below_average_categories;
+
+
+https://chatgpt.com/share/66f59eaf-e470-800c-b396-88c340eea6a5
