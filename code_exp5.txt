@@ -1,0 +1,131 @@
+-- Insert sample data into the student table
+INSERT INTO student (roll_no, name, category, district, state, studentrank) VALUES
+(1, 'Alice', 'A', 'District 1', 'State 1', 1),
+(2, 'Bob', 'A', 'District 2', 'State 1', 2),
+(3, 'Charlie', 'B', 'District 1', 'State 1', 1),
+(4, 'David', 'A', 'District 1', 'State 1', 1),
+(5, 'Eve', 'B', 'District 2', 'State 1', 1),
+(6, 'Frank', 'C', 'District 1', 'State 1', 2),
+(7, 'Grace', 'C', 'District 1', 'State 1', 2);
+
+-- Insert sample data into the studentrank table
+INSERT INTO studentrank (rollno, marks, student_rank) VALUES
+(1, 90, 1),
+(2, 85, 2),
+(3, 90, 1),
+(4, 88, 1),
+(5, 87, 1),
+(6, 82, 2),
+(7, 80, 2);
+
+
+
+CREATE VIEW students_with_same_category_and_rank AS
+SELECT s.*
+FROM student s
+JOIN studentrank sr ON s.rollno = sr.rollno
+WHERE (s.category, sr.student_rank) IN (
+    SELECT s1.category, sr1.student_rank
+    FROM student s1
+    JOIN studentrank sr1 ON s1.rollno = sr1.rollno
+    GROUP BY s1.category, sr1.student_rank
+    HAVING COUNT(*) > 1
+);
+
+
+SELECT * FROM students_with_same_category_and_rank;
+
+
+CREATE VIEW highest_rank_students AS
+SELECT s.rollno, s.name, s.category, s.district, sr.student_rank
+FROM student s
+JOIN studentrank sr ON s.rollno = sr.rollno
+JOIN (
+    SELECT s1.category, s1.state, MIN(sr1.student_rank) AS highest_rank
+    FROM student s1
+    JOIN studentrank sr1 ON s1.rollno = sr1.rollno
+    GROUP BY s1.category, s1.state
+) AS highest_ranks
+ON s.category = highest_ranks.category 
+AND sr.student_rank = highest_ranks.highest_rank
+AND s.state = highest_ranks.state;
+
+
+mysql> SELECT s.name, 
+            sr.marks, 
+            sr.student_rank, 
+           CASE 
+                WHEN x.category = 1 THEN 'First Category: Same marks, different rank'
+               WHEN x.category = 2 THEN 'Second Category: Different marks, same rank'
+            END AS status
+     FROM student s
+     JOIN studentrank sr ON s.rollno = sr.rollno
+     JOIN (
+         -- First Category: Same marks, different rank
+         SELECT sr1.rollno, 1 AS category 
+         FROM studentrank sr1
+         JOIN studentrank sr2 ON sr1.marks = sr2.marks AND sr1.student_rank != sr2.student_rank
+         WHERE sr1.rollno != sr2.rollno
+         
+        UNION
+         
+         -- Second Category: Different marks, same rank
+         SELECT sr1.rollno, 2 AS category 
+         FROM studentrank sr1
+         JOIN studentrank sr2 ON sr1.marks != sr2.marks AND sr1.student_rank = sr2.student_rank
+         WHERE sr1.rollno != sr2.rollno
+     ) x ON sr.rollno = x.rollno;
++---------+-------+--------------+---------------------------------------------+
+| name    | marks | student_rank | status                                      |
++---------+-------+--------------+---------------------------------------------+
+| Bob     |    85 |            2 | Second Category: Different marks, same rank |
+| Charlie |    90 |            1 | First Category: Same marks, different rank  |
+| Charlie |    90 |            1 | Second Category: Different marks, same rank |
+| David   |    88 |            1 | Second Category: Different marks, same rank |
+| Eve     |    87 |            1 | Second Category: Different marks, same rank |
+| Frank   |    82 |            2 | Second Category: Different marks, same rank |
+| Grace   |    80 |            2 | Second Category: Different marks, same rank |
+| allen   |    90 |            3 | First Category: Same marks, different rank  |
++---------+-------+--------------+---------------------------------------------+
+8 rows in set (0.03 sec)
+
+
+
+CREATE VIEW category_performance AS
+SELECT category, AVG(marks) AS avg_marks
+FROM student s
+JOIN studentrank sr ON s.rollno = sr.rollno
+GROUP BY category;
+
+
+-- Highest performance
+SELECT category, avg_marks 
+FROM category_performance 
+ORDER BY avg_marks DESC 
+LIMIT 1;
+
+-- Least performance
+SELECT category, avg_marks 
+FROM category_performance 
+ORDER BY avg_marks ASC 
+LIMIT 1;
+
+
+CREATE VIEW below_average_categories AS
+WITH overall_average AS (
+    SELECT AVG(avg_marks) AS avg_marks
+    FROM (
+        SELECT category, AVG(marks) AS avg_marks
+        FROM student s
+        JOIN studentrank sr ON s.rollno = sr.rollno
+        GROUP BY category
+    ) AS category_avg
+)
+SELECT category, AVG(marks) AS avg_marks
+FROM student s
+JOIN studentrank sr ON s.rollno = sr.rollno
+GROUP BY category
+HAVING AVG(marks) < (SELECT avg_marks FROM overall_average);
+
+
+SELECT * FROM below_average_categories;
