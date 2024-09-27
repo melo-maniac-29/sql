@@ -1,0 +1,56 @@
+I see where the confusion lies. Let's go through this step-by-step and fix the query to meet your requirements correctly. The goal is to identify:
+
+1. **First Category**: Students with the same marks but different ranks.
+2. **Second Category**: Students with different marks but the same ranks.
+
+### Correct Query to Handle Both Categories:
+
+```sql
+SELECT s.name, 
+       sr.marks, 
+       sr.student_rank, 
+       CASE 
+           WHEN x.category = 1 THEN 'First Category: Same marks, different rank'
+           WHEN x.category = 2 THEN 'Second Category: Different marks, same rank'
+       END AS status
+FROM student s
+JOIN studentrank sr ON s.rollno = sr.rollno
+JOIN (
+    -- First Category: Same marks, different rank
+    SELECT sr1.rollno, 1 AS category 
+    FROM studentrank sr1
+    JOIN studentrank sr2 ON sr1.marks = sr2.marks AND sr1.student_rank != sr2.student_rank
+    WHERE sr1.rollno != sr2.rollno
+    
+    UNION
+    
+    -- Second Category: Different marks, same rank
+    SELECT sr1.rollno, 2 AS category 
+    FROM studentrank sr1
+    JOIN studentrank sr2 ON sr1.marks != sr2.marks AND sr1.student_rank = sr2.student_rank
+    WHERE sr1.rollno != sr2.rollno
+) x ON sr.rollno = x.rollno;
+```
+
+### Explanation:
+
+- **First Category** (`category = 1`): This checks for students who have **the same marks** (`sr1.marks = sr2.marks`) but **different ranks** (`sr1.student_rank != sr2.student_rank`).
+- **Second Category** (`category = 2`): This checks for students who have **different marks** (`sr1.marks != sr2.marks`) but **the same rank** (`sr1.student_rank = sr2.student_rank`).
+
+### Expected Correct Output:
+
+| name    | marks | student_rank | status                                       |
+|---------|-------|--------------|----------------------------------------------|
+| Alice   | 90    | 1            | First Category: Same marks, different rank   |
+| Charlie | 90    | 1            | First Category: Same marks, different rank   |
+| Frank   | 82    | 2            | Second Category: Different marks, same rank  |
+| Grace   | 80    | 2            | Second Category: Different marks, same rank  |
+
+### Explanation of the Output:
+
+- **Alice and Charlie**: Both have **the same marks (90)** but are in the **same rank (1)**, which is not an issue, and the first category does not return them.
+- **Frank and Grace**: Both have **the same rank (2)** but **different marks (82 and 80)** so they should
+
+
+
+https://chatgpt.com/share/66f634ff-1cf4-8006-9e0c-8302ccf028ce
