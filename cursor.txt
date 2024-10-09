@@ -72,3 +72,31 @@ select * from employee01;
 delete from employee01 where eid='201';
 
 truncate table updated_table01;
+
+NAME	SALARY
+aliya	579
+allen	58
+2 rows returned in 0.00 seconds	        	Download
+			
+EID	ENAME	DOJ	SALARY	DEPID
+302	amaya	10/01/1987	1000	11
+103	anila	10/01/1987	10000	12
+101	aliya	10/01/1983	12155	10
+202	allen	10/01/1986	1216	10
+102	alen	10/01/1983	10000	11
+301	amal	10/01/1987	1000	11
+401	gervasis	11/21/1987	1000	12
+402	jeni	11/22/1989	1000	12
+8 rows returned in 0.00 seconds	        	Download
+
+
+ID	DEP_NAME	MANGER_ID
+10	CS	101
+11	EC	102
+12	CE	103
+3 rows returned in 0.00 seconds	        	Download
+			
+
+
+			
+
