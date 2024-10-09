@@ -2,30 +2,42 @@
 -- the amount is calculated as follows first 50 units .50 per units 
 -- next 100 units .75 per units next 100 units 1.20 per units about 250 units 1.5 per units and additional sub charge of 20% of the amount is added to the bill
 
-CREATE TABLE bill (
+
+
+CREATE TABLE bill0 (
     customer_id NUMBER PRIMARY KEY,
     name VARCHAR2(100),
     address VARCHAR2(255),
     units NUMBER,
-    amount NUMBER
+    amount NUMBER DEFAULT 0  -- Initialize amount to 0 by default
 );
 
 
-BEGIN
-    -- Insert bills for various customers
-    calculate_bill(1, 'John Doe', '123 Elm Street', 45);   -- 45 units
-    calculate_bill(2, 'Jane Smith', '456 Oak Avenue', 120); -- 120 units
-    calculate_bill(3, 'Alice Johnson', '789 Pine Road', 200); -- 200 units
-    calculate_bill(4, 'Bob Brown', '321 Maple Blvd', 300);   -- 300 units
-    calculate_bill(5, 'Charlie Green', '654 Cedar Lane', 75); -- 75 units
-END;
-/
+INSERT INTO bill0 (customer_id, name, address, units, amount) VALUES (68, 'Ammu', 'Munnar', 200, 0);
+INSERT INTO bill0 (customer_id, name, address, units, amount) VALUES (35, 'Manu', 'Kollam', 50, 0);
+INSERT INTO bill0 (customer_id, name, address, units, amount) VALUES (57, 'Sidharth', 'Thrissur', 70, 0);
+INSERT INTO bill0 (customer_id, name, address, units, amount) VALUES (30, 'Ann', 'Munnar', 300, 0);
+INSERT INTO bill0 (customer_id, name, address, units, amount) VALUES (50, 'Mary', 'Alappuzha', 150, 0);
+INSERT INTO bill0 (customer_id, name, address, units, amount) VALUES (65, 'Manoj', 'Kottayam', 250, 0);
+
+
+-- Check the bills
+SELECT * FROM bill0;
+
+truncate table bill0;
+
+CUSTOMER_ID	NAME	ADDRESS	UNITS	AMOUNT
+35	Manu	Kollam	50	0
+68	Ammu	Munnar	200	0
+57	Sidharth	Thrissur	70	0
+30	Ann	Munnar	300	0
+50	Mary	Alappuzha	150	0
+65	Manoj	Kottayam	250	0
+
 
 
 CREATE OR REPLACE PROCEDURE calculate_bill (
     p_customer_id IN NUMBER,
-    p_name IN VARCHAR2,
-    p_address IN VARCHAR2,
     p_units IN NUMBER
 ) IS
     v_amount NUMBER := 0;
@@ -46,12 +58,13 @@ BEGIN
     v_sub_charge := v_amount * 0.20;
     v_amount := v_amount + v_sub_charge;
 
-    -- Insert the bill into the bill table
-    INSERT INTO bill01 (customer_id, name, address, units, amount)
-    VALUES (p_customer_id, p_name, p_address, p_units, v_amount);
+    -- Update the bill in the bill table
+    UPDATE bill0
+    SET units = p_units, amount = v_amount
+    WHERE customer_id = p_customer_id;
 
     COMMIT;
-    DBMS_OUTPUT.PUT_LINE('Bill calculated and inserted for customer ID: ' || p_customer_id);
+    DBMS_OUTPUT.PUT_LINE('Bill calculated and updated for customer ID: ' || p_customer_id);
 EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
@@ -60,10 +73,25 @@ END calculate_bill;
 /
 
 BEGIN
-    calculate_bill(1, 'John Doe', '123 Elm Street', 300);
+    calculate_bill(68, 200);  -- For Ammu
+    calculate_bill(35, 50);   -- For Manu
+    calculate_bill(57, 70);   -- For Sidharth
+    calculate_bill(30, 300);  -- For Ann
+    calculate_bill(50, 150);  -- For Mary
+    calculate_bill(65, 250);  -- For Manoj
 END;
 /
 
+-- Check the updated bills
+SELECT * FROM bill0;
 
-select * from bill01;
-
+CUSTOMER_ID	NAME	ADDRESS	UNITS	AMOUNT
+35	Manu	Kollam	50	30
+68	Ammu	Munnar	200	192
+57	Sidharth	Thrissur	70	48
+30	Ann	Munnar	300	354
+50	Mary	Alappuzha	150	120
+65	Manoj	Kottayam	250	264
+6 rows returned in 0.01 seconds	        	Download
+			
+											
