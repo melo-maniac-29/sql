@@ -1,0 +1,3 @@
+-- write a pl/SQL code for electricity bill calculation schema,bill(customer_id,Name,address,units,amount)
+-- the amount is calculated as follows first 50 units .50 per units 
+-- next 100 units .75 per units next 100 units 1.20 per units about 250 units 1.5 per units and additional sub charge of 20% of the amount is added to the bill
