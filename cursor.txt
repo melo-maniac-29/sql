@@ -1,6 +1,6 @@
 create table department01(id int primary key, dep_name varchar(15), manger_id int);
 create table employee01(eid int primary key, ename varchar(15),doj date,salary int,depid int, foreign key(depid) references department01(id));
-create table updated_table01(name varchar(15),salary int);+
+create table updated_table01(name varchar(15),salary int);
 
 
 
