@@ -47,11 +47,10 @@ END;
 
 select * from updated_table01;
 
+select * from department01;
+
 select * from employee01;
 
-delete from employee01 where eid='201';
-
-truncate table updated_table01;
 
 NAME	SALARY
 aliya	579
