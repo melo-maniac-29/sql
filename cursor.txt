@@ -1,0 +1,47 @@
+create table dep(id int primary key, dep_name varchar(15), manger_id int);
+create table empl(eid int primary key, ename varchar(15),doj date,salary int,depid int, foreign key(depid) references dep(id));
+create updated_table(name varchar(15),salary int);
+
+insert into empl values(101,'abc', DATE '1983-10-01',10000,10);
+
+dep
+
+ID	DEP_NAME	MANGER_ID
+10	cs	101
+11	ec	102
+12	ce	103
+
+
+EID	ENAME	DOJ	SALARY	DEPID
+101	abc	10/01/1983	10000	10
+201	abcd	10/01/1985	1000	10
+202	abcde	10/01/1986	1000	10
+102	sss	10/01/1983	10000	11
+301	mm	10/01/1987	1000	11
+302	cc	10/01/1987	1000	11
+103	aaa	10/01/1987	10000	12
+401	gggg	11/21/1987	1000	12
+402	ppp	11/22/1989	1000	12
+
+declare
+d dep.id%type;
+nm empl.ename%type;
+i empl.eid%type;
+s empl.salary%type;
+t empl.salary%type;
+u empl.salary%type;
+cursor cseresearch is select ename,eid,salary from empl,dep where dep_name='cs' and months_between(sysdate,doj)/12>10 and dep.id=empl.depid;
+begin
+open cseresearch;
+loop
+fetch cseresearch into nm,i,s;
+exit when cseresearch%notfound;
+t:=s;
+s:=s+(s*0.05);
+u:=s-t;
+update empl set salary=s where eid=i;
+insert into updated_table values(nm,u);
+end loop;
+close cseresearch;
+end;
+/
