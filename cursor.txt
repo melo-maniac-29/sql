@@ -23,25 +23,52 @@ EID	ENAME	DOJ	SALARY	DEPID
 401	gggg	11/21/1987	1000	12
 402	ppp	11/22/1989	1000	12
 
-declare
-d dep.id%type;
-nm empl.ename%type;
-i empl.eid%type;
-s empl.salary%type;
-t empl.salary%type;
-u empl.salary%type;
-cursor cseresearch is select ename,eid,salary from empl,dep where dep_name='cs' and months_between(sysdate,doj)/12>10 and dep.id=empl.depid;
-begin
-open cseresearch;
-loop
-fetch cseresearch into nm,i,s;
-exit when cseresearch%notfound;
-t:=s;
-s:=s+(s*0.05);
-u:=s-t;
-update empl set salary=s where eid=i;
-insert into updated_table values(nm,u);
-end loop;
-close cseresearch;
-end;
+
+DECLARE
+    v_department_id department01.id%TYPE;
+    v_employee_name employee01.ename%TYPE;
+    v_employee_id employee01.eid%TYPE;
+    v_salary employee01.salary%TYPE;
+    v_new_salary employee01.salary%TYPE;
+    v_salary_increase employee01.salary%TYPE;
+    v_percentage_increase CONSTANT NUMBER := 0.05; -- 5% increase
+
+    CURSOR cseresearch IS
+        SELECT ename, eid, salary 
+        FROM employee01
+        JOIN department01 ON department01.id = employee01.depid
+        WHERE dep_name = 'CS' 
+        AND months_between(SYSDATE, doj) / 12 > 10;
+
+BEGIN
+    OPEN cseresearch;
+    LOOP
+        FETCH cseresearch INTO v_employee_name, v_employee_id, v_salary;
+        EXIT WHEN cseresearch%NOTFOUND;
+
+        v_new_salary := v_salary + (v_salary * v_percentage_increase);
+        v_salary_increase := v_new_salary - v_salary;
+
+        UPDATE employee01 
+        SET salary = v_new_salary 
+        WHERE eid = v_employee_id;
+
+        INSERT INTO updated_table01 
+        VALUES (v_employee_name, v_salary_increase);
+    END LOOP;
+    CLOSE cseresearch;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Handle exceptions
+        RAISE_APPLICATION_ERROR(-20001, 'An error occurred: ' || SQLERRM);
+END;
 /
+
+select * from updated_table01;
+
+select * from employee01;
+
+delete from employee01 where eid='201';
+
+truncate table updated_table01;
