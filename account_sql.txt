@@ -1,0 +1,90 @@
+--create a table amount with attribute (account_no,b_name,balance)
+--insert values into the table
+--display values from the table account
+--create another table account_new with attributes
+--account_no,bank_name,balance declare cursor on the table account 
+--for selecting balance between 7000 and 9000
+
+
+CREATE TABLE amount (
+    account_no INT PRIMARY KEY,
+    b_name VARCHAR(100),
+    balance DECIMAL(10, 2)
+);
+
+
+INSERT INTO amount (account_no, b_name, balance) VALUES (101, 'Bank A', 7500.00);
+INSERT INTO amount (account_no, b_name, balance) VALUES (102, 'Bank B', 6000.00);
+INSERT INTO amount (account_no, b_name, balance) VALUES (103, 'Bank C', 8500.00);
+INSERT INTO amount (account_no, b_name, balance) VALUES (104, 'Bank D', 9000.00);
+INSERT INTO amount (account_no, b_name, balance) VALUES (105, 'Bank E', 9500.00);
+
+
+select * from amount;
+
+ACCOUNT_NO	B_NAME	BALANCE
+101	Bank A	7500
+102	Bank B	6000
+103	Bank C	8500
+104	Bank D	9000
+105	Bank E	9500
+5 rows returned in 0.00 seconds	        	Download
+			
+
+
+CREATE TABLE account_new (
+    account_no INT PRIMARY KEY,
+    bank_name VARCHAR(100),
+    balance DECIMAL(10, 2)
+);
+
+
+DECLARE
+    -- Declare the cursor
+    CURSOR balance_cursor IS
+        SELECT account_no, b_name, balance
+        FROM amount
+        WHERE balance BETWEEN 7000 AND 9000;
+
+    -- Variable to hold data from the cursor
+    v_account_no amount.account_no%TYPE;
+    v_b_name amount.b_name%TYPE;
+    v_balance amount.balance%TYPE;
+BEGIN
+    -- Open the cursor
+    OPEN balance_cursor;
+
+    -- Loop through the cursor and fetch data
+    LOOP
+        FETCH balance_cursor INTO v_account_no, v_b_name, v_balance;
+        EXIT WHEN balance_cursor%NOTFOUND;
+
+        -- Here you can process each row
+        DBMS_OUTPUT.PUT_LINE('Account No: ' || v_account_no || ', Bank Name: ' || v_b_name || ', Balance: ' || v_balance);
+        INSERT INTO account_new (account_no, bank_name, balance)
+        VALUES (v_account_no, v_b_name, v_balance);
+    END LOOP;
+
+    -- Close the cursor
+    CLOSE balance_cursor;
+END;
+/
+
+
+Account No: 101, Bank Name: Bank A, Balance: 7500
+Account No: 103, Bank Name: Bank C, Balance: 8500
+Account No: 104, Bank Name: Bank D, Balance: 9000
+
+1 row(s) inserted.
+
+
+0.01 seconds
+
+select * from account_new;
+
+ACCOUNT_NO	BANK_NAME	BALANCE
+101	Bank A	7500
+103	Bank C	8500
+104	Bank D	9000
+3 rows returned in 0.00 seconds	        	Download
+			
