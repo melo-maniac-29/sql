@@ -1,0 +1,220 @@
+procedure program
+
+book_user database
+
+create a library database with the schema 
+schemas : 
+book(book_id,title,no_of_copies)
+student(student_id,name,address,age)
+book_issue(issue_id,student_id,book_id,issue_date)
+book_return(issue_id,return_date,fine)
+
+create a procedure for book issues and return of books the trigger to update no of copies on book issue and book return calculate the fine if the book is returned after 15 days of issue_date
+
+
+
+SET SERVEROUTPUT ON;
+
+CREATE TABLE student11 (
+    student_id INT PRIMARY KEY,
+    name VARCHAR(15),
+    address VARCHAR(15),
+    age INT
+);
+
+CREATE TABLE book11 (
+    book_id INT PRIMARY KEY,
+    title VARCHAR(15),
+    no_of_copies INT
+);
+
+-- Create a sequence for issuing IDs
+CREATE SEQUENCE book_issue_seq START WITH 101 INCREMENT BY 1;
+
+CREATE TABLE book_issue11 (
+    issue_id INT PRIMARY KEY,
+    student_id INT,
+    book_id INT,
+    issue_date DATE,
+    FOREIGN KEY (student_id) REFERENCES student(student_id),
+    FOREIGN KEY (book_id) REFERENCES book(book_id)
+);
+
+CREATE TABLE book_return11 (
+    issue_id INT PRIMARY KEY,
+    return_date DATE,
+    fine INT,
+    FOREIGN KEY (issue_id) REFERENCES book_issue(issue_id)
+);
+
+CREATE OR REPLACE TRIGGER issue_id11
+BEFORE INSERT ON book_issue11
+FOR EACH ROW
+BEGIN
+    SELECT book_issue_seq.NEXTVAL INTO :new.issue_id FROM dual;
+END;
+/
+
+
+
+insert into student11 values(5,'rithik','kottayam',22);
+insert into student11 values(8,'manu','kollam',21);
+insert into student11 values(11,'gautham','idukki',20);
+insert into student11 values(43,'arjun','adoor',21);
+
+
+insert into book11 values(1234,'ironman',10);
+insert into book11 values(2345,'batman',10);
+insert into book11 values(3456,'superman',10);
+insert into book11 values(4567,'superman',10);
+
+
+CREATE OR REPLACE PROCEDURE issue11(sid INT, bid INT, dte DATE) IS 
+BEGIN
+    INSERT INTO book_issue11 (student_id, book_id, issue_date) VALUES (sid, bid, dte);
+    
+    
+    UPDATE book SET no_of_copies = no_of_copies - 1 WHERE book_id = bid;
+END;
+/
+
+
+
+CREATE OR REPLACE TRIGGER issue_book11
+AFTER INSERT ON book_issue11
+FOR EACH ROW
+DECLARE
+    a INT;
+BEGIN
+    a := :new.book_id;
+    
+    UPDATE book SET no_of_copies = no_of_copies - 1 WHERE book_id = a;
+END;
+/
+
+
+CREATE OR REPLACE PROCEDURE return11(sid INT, bid INT, dte DATE) IS
+    x INT;
+    y INT;
+    sd DATE;
+    fine INT;
+BEGIN
+    
+    SELECT issue_id INTO x FROM book_issue11 WHERE student_id = sid AND book_id = bid;
+
+    
+    SELECT issue_date INTO sd FROM book_issue11 WHERE issue_id = x;
+
+    
+    y := dte - sd; 
+    IF (y > 15) THEN
+        fine := (y - 15) * 2; -- Calculate fine
+    ELSE
+        fine := 0;
+    END IF;
+
+    
+    INSERT INTO book_return11(issue_id, return_date, fine) VALUES (x, dte, fine);
+    
+    
+    UPDATE book11 SET no_of_copies = no_of_copies + 1 WHERE book_id = bid;
+END;
+/
+
+CREATE OR REPLACE TRIGGER return_book11
+AFTER INSERT ON book_return11
+FOR EACH ROW
+DECLARE
+    a INT;
+    id INT;
+BEGIN
+    a := :new.issue_id;
+    SELECT book_id INTO id FROM book_issue11 WHERE issue_id = a;
+    UPDATE book11 SET no_of_copies = (no_of_copies + 1) WHERE book_id = id;
+END;
+/
+
+
+
+
+
+
+
+BEGIN
+    issue11(5, 1234, TO_DATE('15-NOV-2023', 'DD-MON-YYYY'));
+END;
+/
+
+BEGIN
+    issue(5, 3456, TO_DATE('15-NOV-2023', 'DD-MON-YYYY'));
+END;
+/
+
+BEGIN
+    issue(11, 1234, TO_DATE('20-NOV-2023', 'DD-MON-YYYY'));
+END;
+/
+
+BEGIN
+    issue(43, 1234, TO_DATE('20-NOV-2023', 'DD-MON-YYYY'));
+END;
+/
+
+BEGIN
+    issue(43, 2345, TO_DATE('20-NOV-2023', 'DD-MON-YYYY'));
+END;
+/
+
+
+ISSUE_ID	STUDENT_ID	BOOK_ID	ISSUE_DATE
+102	5	1234	11/15/2023
+104	11	1234	11/20/2023
+105	43	1234	11/20/2023
+106	43	2345	11/20/2023
+103	5	3456	11/15/2023
+5 rows returned in 0.00 seconds	        	Download
+			
+
+
+
+BEGIN
+    return11(5, 3456, TO_DATE('25-NOV-2023', 'DD-MON-YYYY'));
+END;
+/
+
+BEGIN
+    return11(43, 4567, TO_DATE('25-NOV-2023', 'DD-MON-YYYY'));
+END;
+/
+
+BEGIN
+    return11(5, 1234, TO_DATE('06-DEC-2023', 'DD-MON-YYYY'));
+END;
+/
+
+BEGIN
+    return11(11, 1234, TO_DATE('07-DEC-2023', 'DD-MON-YYYY'));
+END;
+/
+
+ISSUE_ID	RETURN_DATE	FINE
+104	12/07/2023	4
+103	11/25/2023	0
+102	12/06/2023	12
+3 rows returned in 0.00 seconds	        	Download
+			
+
+
+
+select * from book11;
+select * from student11;
+
+select * from book_issue11;
+
+
+select * from book_return11;
+
+truncate table book_issue11;
+truncate table book_return11;
+
+
