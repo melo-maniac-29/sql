@@ -1,0 +1,69 @@
+the following table shows the salary information of employees in a company.employee(emp_id,emp_name,designation,dept,salary) write a trigger that displays the total number of tuples in the relation on each insertion deletion and updation 
+
+CREATE TABLE employee10 (
+    emp_id INT PRIMARY KEY,
+    emp_name VARCHAR(50),
+    designation VARCHAR(50),
+    dept VARCHAR(50),
+    salary INT
+);
+
+CREATE OR REPLACE TRIGGER employee_trig10
+FOR INSERT OR DELETE OR UPDATE ON employee10
+COMPOUND TRIGGER
+
+    v_count NUMBER;
+
+    BEFORE EACH ROW IS
+    BEGIN
+        -- Initialize count to NULL for each operation
+        v_count := NULL;
+    END BEFORE EACH ROW;
+
+    AFTER STATEMENT IS
+    BEGIN
+        -- Get the current count of rows after the DML operation
+        SELECT COUNT(*) INTO v_count FROM employee10;
+        DBMS_OUTPUT.PUT_LINE('Number of tuples in employee relation: ' || v_count);
+    END AFTER STATEMENT;
+
+END employee_trig10;
+/
+
+
+
+
+
+INSERT INTO employee10 VALUES (22, 'Aswathy S', 'Team Lead', 'AI', 10000);
+
+Number of tuples in employee relation: 1
+
+1 row(s) inserted.
+
+
+	
+
+UPDATE employee10 SET salary = 12000 WHERE emp_id = 22; 
+
+Number of tuples in employee relation: 1
+
+1 row(s) inserted.
+
+
+DELETE FROM employee10 WHERE emp_id = 22;
+
+Number of tuples in employee relation: 0
+
+1 row(s) deleted.
+
+
+0.00 seconds
+		
+
+
+
+select * from employee10;
+
+drop table employee10;
+
+
