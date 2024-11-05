@@ -146,22 +146,22 @@ END;
 /
 
 BEGIN
-    issue(5, 3456, TO_DATE('15-NOV-2023', 'DD-MON-YYYY'));
+    issue11(5, 3456, TO_DATE('15-NOV-2023', 'DD-MON-YYYY'));
 END;
 /
 
 BEGIN
-    issue(11, 1234, TO_DATE('20-NOV-2023', 'DD-MON-YYYY'));
+    issue11(11, 1234, TO_DATE('20-NOV-2023', 'DD-MON-YYYY'));
 END;
 /
 
 BEGIN
-    issue(43, 1234, TO_DATE('20-NOV-2023', 'DD-MON-YYYY'));
+    issue11(43, 1234, TO_DATE('20-NOV-2023', 'DD-MON-YYYY'));
 END;
 /
 
 BEGIN
-    issue(43, 2345, TO_DATE('20-NOV-2023', 'DD-MON-YYYY'));
+    issue11(43, 2345, TO_DATE('20-NOV-2023', 'DD-MON-YYYY'));
 END;
 /
 
